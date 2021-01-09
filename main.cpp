@@ -41,7 +41,9 @@ struct AVLTree{
         while(!postOrderStack.empty()){
             BinaryNode * n = postOrderStack.top();
             postOrderStack.pop();
-
+            if(n->parent != nullptr){
+                (n->parent->left == n ? n->parent->leftSubtreeSize ++ : n->parent->leftSubtreeSize --);
+            }
             int balanceVal = n->leftSubtreeSize - n->rightSubtreeSize;
             balance(n, balanceVal);
         }
@@ -49,12 +51,12 @@ struct AVLTree{
     int getValue(int index){
         stack<BinaryNode *> postOrderStack;
         pair<BinaryNode *, bool> p = findParent(root, index, postOrderStack);
-        return (p.second);
+        return (p.first->value);
     }
 private:
     //finds the parent of the node were looking for and the bool - if true - left child if false - right child
     pair<BinaryNode *, bool> findParent(BinaryNode * node, int index, stack<BinaryNode *> &postOrderStack){
-        node->rightSubtreeSize++;
+
         if(index > treeSize - 1){
             cout<<"INVALID ENTRY!";
             return pair<BinaryNode *, bool>(nullptr, 0);
@@ -151,10 +153,12 @@ private:
 
 int main() {
     AVLTree avlTree(0);
-    avlTree.insert(1,0);
-    avlTree.insert(4,1);
-    avlTree.insert(3,1);
-    avlTree.insert(2,1);
+    avlTree.insert(1, 0);
+   // avlTree.insert(2, 2);
+   // avlTree.insert(3, 3);
+  //  avlTree.insert(4, 4);
+   // avlTree.insert(5, 5);
+
     cout<<avlTree.getValue(0);
     //avlTree.insert(avlTree.treeSize);
     //avlTree.insert(avlTree.treeSize);
