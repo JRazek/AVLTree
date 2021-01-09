@@ -24,7 +24,7 @@ struct AVLTree{
 
     void insert(int value, int index){
         stack<BinaryNode *> postOrderStack;
-        pair<BinaryNode *, bool> p = findParent(root, index, value, postOrderStack);
+        pair<BinaryNode *, bool> p = findParent(root, index, postOrderStack);
         if(p.second){
             BinaryNode * left = new BinaryNode(treeSize);
             left->parent = p.first;
@@ -46,9 +46,14 @@ struct AVLTree{
             balance(n, balanceVal);
         }
     }
+    int getValue(int index){
+        stack<BinaryNode *> postOrderStack;
+        pair<BinaryNode *, bool> p = findParent(root, index, postOrderStack);
+        return (p.second);
+    }
 private:
     //finds the parent of the node were looking for and the bool - if true - left child if false - right child
-    pair<BinaryNode *, bool> findParent(BinaryNode * node, int index, int value, stack<BinaryNode *> &postOrderStack){
+    pair<BinaryNode *, bool> findParent(BinaryNode * node, int index, stack<BinaryNode *> &postOrderStack){
         node->rightSubtreeSize++;
         if(index > treeSize - 1){
             cout<<"INVALID ENTRY!";
@@ -59,14 +64,14 @@ private:
                 return pair<BinaryNode *, bool>(node, true);
             }
             else
-                return findParent(node->left, index, value, postOrderStack);
+                return findParent(node->left, index, postOrderStack);
         }
         else {
             if(node->right == nullptr){
                 return pair<BinaryNode *, bool>(node, false);
             }
             else
-                return findParent(node->right, index - node->leftSubtreeSize - 1, value, postOrderStack);
+                return findParent(node->right, index - node->leftSubtreeSize - 1, postOrderStack);
         }
     }
     void insert(int val, BinaryNode * node, int index, stack<BinaryNode *> &balanceStack){
@@ -150,6 +155,7 @@ int main() {
     avlTree.insert(4,1);
     avlTree.insert(3,1);
     avlTree.insert(2,1);
+    cout<<avlTree.getValue(0);
     //avlTree.insert(avlTree.treeSize);
     //avlTree.insert(avlTree.treeSize);
    // avlTree.insert(avlTree.treeSize);
