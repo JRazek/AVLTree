@@ -49,6 +49,7 @@ struct AVLTree{
         }
         for(auto it = postOrderStack.rbegin(); it != postOrderStack.rend(); ++it){
             int balanceVal = it->first->leftSubtreeSize - it->first->rightSubtreeSize;
+            ///todo balance to fix
             //balance(it->first, balanceVal);
         }
         cout<<"";
