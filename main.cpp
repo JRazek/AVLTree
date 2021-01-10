@@ -16,14 +16,16 @@ struct AVLTree{
         const int id;
         BinaryNode(int id): id(id){};
     };
-    BinaryNode * root;
+    BinaryNode * root = nullptr;
     int treeSize = 0;
+    vector<BinaryNode *> testContainer;
 
     void insert(int index, int value){
         if(root == nullptr){
             root = new BinaryNode(0);
             root->value = value;
             ++ treeSize;
+            testContainer.push_back(root);
             return;
         }
         vector<pair<BinaryNode *, bool>> postOrderStack;
@@ -32,14 +34,16 @@ struct AVLTree{
             BinaryNode * left = new BinaryNode(treeSize);
             left->parent = p.first;
             left->value = value;
-            ++treeSize;
+            ++ treeSize;
             p.first->left = left;
+            testContainer.push_back(left);
         }else{
             BinaryNode * right = new BinaryNode(treeSize);
             right->parent = p.first;
             right->value = value;
-            ++treeSize;
+            ++ treeSize;
             p.first->right = right;
+            testContainer.push_back(right);
         }
         for(auto pair : postOrderStack){
             BinaryNode * n = pair.first;
@@ -49,9 +53,8 @@ struct AVLTree{
         }
         for(auto it = postOrderStack.rbegin(); it != postOrderStack.rend(); ++it){
             BinaryNode * n = it->first;
-            int balanceVal = n->leftSubtreeSize - n->rightSubtreeSize;
-            ///todo balance to fix
-            balance(it->first, balanceVal);
+            ///todo rotate to fix
+            balance(n);
         }
         cout<<"";
     }
@@ -61,6 +64,21 @@ struct AVLTree{
         stack<pair<BinaryNode *, bool>> postOrderStack;
         BinaryNode * p = getNodeAtIndex(root, index, postOrderStack);
         return (p->value);
+    }
+    void showStructure(){
+        for(auto n : testContainer){
+            cout<<n->id<<" = "<<n->leftSubtreeSize<<" | "<<n->rightSubtreeSize<<"\n";
+        }
+        cout<<"\n\n\n\n\n\n";
+    }
+    void balance(BinaryNode * node){
+        if(node == nullptr)
+            return;
+        int balanceVal = node->leftSubtreeSize - node->rightSubtreeSize;
+        if(balanceVal > 1)
+            rotate(node, balanceVal - 1);
+        if(balanceVal < -1)
+            rotate(node, balanceVal + 1);
     }
 private:
     //finds the parent of the node were looking for and the bool - if true - left child if false - right child
@@ -115,84 +133,19 @@ private:
         postOrderStack.push(pair<BinaryNode *, bool>(node, turnedLeft));
         return result;
     }
-    void balance(BinaryNode * node, int move, bool force = false){
-        if(move < -1 || (move < 0 && force)){
-            //right is too big
-            //check if right child has left child
-            if(node->right->left != nullptr){
-                //first move child
-                balance(node->right, node->right->leftSubtreeSize, true);
-            }
-
-            BinaryNode * rightChild = node->right;
-            if(node != root)
-                if(node->parent->left == node)
-                    node->parent->left = rightChild;
-                else
-                    node->parent->right = rightChild;
-
-            rightChild->parent = node->parent;
-            rightChild->left = node;
-            rightChild->leftSubtreeSize = node->leftSubtreeSize + 1;
-
-            node->parent = rightChild;
-            node->right = nullptr;
-            node->rightSubtreeSize = 0;
-
-            if(node == this->root){
-                root = rightChild;
-            }
-
-            if(rightChild->leftSubtreeSize < 0){
-                cout<<"WTF";
-            }
-
-            balance(rightChild, move + 1, force);
-        }
-        else if(move > 1 || (move > 0 && force)){
-            if(node->left->right != nullptr){
-                balance(node->left, -node->left->rightSubtreeSize, true);
-            }
-
-            BinaryNode * leftChild = node->left;
-            if(node != root)
-                if(node->parent->left == node)
-                    node->parent->left = leftChild;
-                else
-                    node->parent->right = leftChild;
-
-            leftChild->parent = node->parent;
-            leftChild->right = node;
-            leftChild->rightSubtreeSize = node->rightSubtreeSize + 1;
-
-            node->parent = leftChild;
-            node->left = nullptr;
-            node->leftSubtreeSize = 0;
-
-            if(node == this->root){
-                root = leftChild;
-            }
-
-            balance(leftChild, move - 1, force);
-        }
-
+    void rotate(BinaryNode * node, int move, bool force = false){
+        
     }
+
 };
 
 int main() {
     AVLTree avlTree;
-
-    avlTree.insert(0, 11);
-    avlTree.insert(0, 10);
-    avlTree.insert(0, 9);
-    avlTree.insert(0, 8);
-    avlTree.insert(0, 7);
-    avlTree.insert(0, 6);
-    avlTree.insert(0, 5);
-    avlTree.insert(0, 4);
-    avlTree.insert(0, 3);
-    avlTree.insert(0, 2);
-    avlTree.insert(0, 1);
+    for(int i = 0; i < 20; i ++) {
+        avlTree.insert(0, i);
+        avlTree.showStructure();
+        cout<<"";
+    }
    // avlTree.insert(3, 3);
   //  avlTree.insert(4, 4);
    // avlTree.insert(5, 5);
@@ -200,7 +153,6 @@ int main() {
    for(int i = 0; i < avlTree.treeSize; i++){
        cout<<avlTree.getValue(i)<<" ";
    }
-
     cout<<"";
     return 0;
 }
