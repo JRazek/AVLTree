@@ -49,7 +49,7 @@ struct AVLTree{
         }
         for(auto it = postOrderStack.rbegin(); it != postOrderStack.rend(); ++it){
             int balanceVal = it->first->leftSubtreeSize - it->first->rightSubtreeSize;
-            balance(it->first, balanceVal);
+            //balance(it->first, balanceVal);
         }
         cout<<"";
     }
@@ -93,14 +93,21 @@ private:
             cout<<"INVALID ENTRY!";
             result = nullptr;
         }
-        if(node->leftSubtreeSize > index){
-            result = getNodeAtIndex(node->left, index, postOrderStack);
+        if(index < node->leftSubtreeSize){
+            if(node->left == nullptr)
+                result = node;
+            else
+                result = getNodeAtIndex(node->left, index, postOrderStack);
         }
-        else if(node->leftSubtreeSize == index){
+        else if(index == node->leftSubtreeSize){
             result = node;
         }
         else{
-            result = getNodeAtIndex(node->right, index - node->leftSubtreeSize - 1, postOrderStack);
+            int rightIndex = index - node->leftSubtreeSize - 1;
+            if(node->right == nullptr)
+                result = node;
+            else
+                result = getNodeAtIndex(node->right, rightIndex, postOrderStack);
             turnedLeft = false;
         }
         postOrderStack.push(pair<BinaryNode *, bool>(node, turnedLeft));
@@ -173,15 +180,21 @@ private:
 int main() {
     AVLTree avlTree;
 
+    avlTree.insert(0, 11);
+    avlTree.insert(0, 10);
+    avlTree.insert(0, 9);
+    avlTree.insert(0, 8);
+    avlTree.insert(0, 7);
+    avlTree.insert(0, 6);
     avlTree.insert(0, 5);
     avlTree.insert(0, 4);
+    avlTree.insert(0, 3);
     avlTree.insert(0, 2);
     avlTree.insert(0, 1);
-    avlTree.insert(2, 3);
    // avlTree.insert(3, 3);
   //  avlTree.insert(4, 4);
    // avlTree.insert(5, 5);
-
+    cout<<"";
    for(int i = 0; i < avlTree.treeSize; i++){
        cout<<avlTree.getValue(i)<<" ";
    }
