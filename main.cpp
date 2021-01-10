@@ -84,6 +84,7 @@ private:
             cout<<"INVALID ENTRY!";
             result = pair<BinaryNode *, bool>(nullptr, 0);
         }
+        ///heres the invalid read //todo
         if(node->leftSubtreeSize >= index){
             if(node->left == nullptr){
                 result = pair<BinaryNode *, bool>(node, true);
