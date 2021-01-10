@@ -8,15 +8,14 @@ struct AVLTree{
         BinaryNode * left = nullptr;
         BinaryNode * right = nullptr;
 
-        int levelInTree = 0;
-
         int value;
+
+        int leftHeight = 0;
+        int rightHeight = 0;
 
         int leftSubtreeSize = 0;
         int rightSubtreeSize = 0;
 
-        int leftHeight = 0;
-        int rightHeight = 0;
 
         const int id;
         BinaryNode(int id): id(id){};
@@ -25,7 +24,7 @@ struct AVLTree{
     int treeSize = 0;
     vector<BinaryNode *> testContainer;
 
-    void insert(int index, int value){
+    /*void insert(int index, int value){
         if(root == nullptr){
             root = new BinaryNode(0);
             root->value = value;
@@ -35,7 +34,7 @@ struct AVLTree{
             return;
         }
         vector<pair<BinaryNode *, pair<bool, int>>> postOrderStack;
-        pair<BinaryNode *, bool> p = findParentForInsert(root, index, postOrderStack);
+        pair<BinaryNode *, bool> p = insert(root, index, postOrderStack);
         if(p.second){
             BinaryNode * left = new BinaryNode(treeSize);
             left->parent = p.first;
@@ -101,18 +100,7 @@ struct AVLTree{
         //todo test the rotation type
         cout<<"";
     }
-    void rotation(BinaryNode * node, int type){
-        int balanceVal = node->leftHeight - node->rightHeight;
-        if(type == 0){
-            //LL
-        }else if(type == 1){
-            //LR
-        }else if(type == 2){
-            //RR
-        }else if(type == 3){
-            //RL
-        }
-    }
+*/
     int getValue(int index){
         stack<pair<BinaryNode *, bool>> postOrderStack;
         BinaryNode * p = getNodeAtIndex(root, index, postOrderStack);
@@ -124,31 +112,69 @@ struct AVLTree{
         }
         cout<<"\n\n\n\n\n\n";
     }
+    void insert(int index, int value){
+        if(root == nullptr){
+            root = new BinaryNode(treeSize);
+            ++ treeSize;
+            testContainer.push_back(root);
+            root->value = value;
+        }
+        else {
+            insert(root, index, value);
+        }
+    }
 private:
-    //finds the parent of the node were looking for and the bool - if true - left child if false - right child
-    pair<BinaryNode *, bool> findParentForInsert(BinaryNode * node, int index, vector<pair<BinaryNode *, pair<bool, int>>> &postOrderStack){
-                                                                                        //node, <left/right, reachableHeight
-        pair<BinaryNode *, bool> result;
+    int insert(BinaryNode * node, int index, int value){//node, <left/right, reachableHeight
+        int maxHeight = 0;
         bool turnedLeft = true;
         if(index > treeSize ){
             cout<<"INVALID ENTRY!";
-            result = pair<BinaryNode *, bool>(nullptr, 0);
+            maxHeight = -1;
+            return maxHeight;
         }
         if(index <= node->leftSubtreeSize){
-            if(node->left == nullptr)
-                result = pair<BinaryNode *, bool>(node, true);
-            else
-                result = findParentForInsert(node->left, index, postOrderStack);
+            if(node->left == nullptr) {
+                BinaryNode * left = new BinaryNode(treeSize);
+                left->parent = node;
+                left->value = value;
+                ++ treeSize;
+                node->left = left;
+
+                testContainer.push_back(left);
+                maxHeight = 1;
+            }
+            else {
+                maxHeight = insert(node->left, index, value);
+            }
         }
         else {
-            if(node->right == nullptr)
-                result = pair<BinaryNode *, bool>(node, false);
+            if(node->right == nullptr) {
+                BinaryNode * right = new BinaryNode(treeSize);
+                right->parent = node;
+                right->value = value;
+                ++ treeSize;
+                node->right = right;
+
+                testContainer.push_back(right);
+                maxHeight = 1;
+            }
             else
-                result = findParentForInsert(node->right, index - node->leftSubtreeSize - 1, postOrderStack);
+                maxHeight = insert(node->right, index - node->leftSubtreeSize - 1, value);
             turnedLeft = false;
         }
-        postOrderStack.push_back(pair<BinaryNode *, pair<bool, int>>(node, pair<bool, int>(turnedLeft, postOrderStack.size() + 1)));
-        return result;
+        if(turnedLeft){
+            node->leftSubtreeSize ++;
+            if(node->leftHeight < maxHeight){
+                node->leftHeight = maxHeight;
+            }
+        }else{
+            node->rightSubtreeSize ++;
+            if(node->rightHeight < maxHeight){
+                node->rightHeight = maxHeight;
+            }
+        }
+        //time to check for imbalances
+        return maxHeight + 1;
     }
 
     BinaryNode * getNodeAtIndex(BinaryNode * node, int index, stack<pair<BinaryNode *, bool>> &postOrderStack){
@@ -187,7 +213,7 @@ int main() {
     avlTree.insert(0, 4);
     avlTree.insert(0, 3);
     avlTree.insert(0, 2);
-    avlTree.insert(4, 1);
+    avlTree.insert(0, 1);
    // avlTree.insert(3, 3);
   //  avlTree.insert(4, 4);
    // avlTree.insert(5, 5);
