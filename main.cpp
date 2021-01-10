@@ -48,9 +48,10 @@ struct AVLTree{
             cout<<"";
         }
         for(auto it = postOrderStack.rbegin(); it != postOrderStack.rend(); ++it){
-            int balanceVal = it->first->leftSubtreeSize - it->first->rightSubtreeSize;
+            BinaryNode * n = it->first;
+            int balanceVal = n->leftSubtreeSize - n->rightSubtreeSize;
             ///todo balance to fix
-            //balance(it->first, balanceVal);
+            balance(it->first, balanceVal);
         }
         cout<<"";
     }
@@ -146,7 +147,7 @@ private:
                 cout<<"WTF";
             }
 
-            balance(rightChild, move + 1);
+            balance(rightChild, move + 1, force);
         }
         else if(move > 1 || (move > 0 && force)){
             if(node->left->right != nullptr){
@@ -172,7 +173,7 @@ private:
                 root = leftChild;
             }
 
-            balance(leftChild, move - 1);
+            balance(leftChild, move - 1, force);
         }
 
     }
