@@ -112,6 +112,9 @@ struct AVLTree{
         }
         cout<<"\n\n\n\n\n\n";
     }
+    int max(int x, int y){
+        return x > y ? x : y;
+    }
     void insert(int index, int value){
         if(root == nullptr){
             root = new BinaryNode(treeSize);
@@ -120,11 +123,16 @@ struct AVLTree{
             root->value = value;
         }
         else {
-            insert(root, index, value);
+            vector<bool> directions;
+            BinaryNode * newNode = new BinaryNode(treeSize);
+            newNode->value = value;
+            insert(root, index, newNode, directions);
+            testContainer.push_back(newNode);
+            ++ treeSize;
         }
     }
 private:
-    int insert(BinaryNode * node, int index, int value){//node, <left/right, reachableHeight
+    int insert(BinaryNode * node, int index, BinaryNode * insertedNode, vector<bool> &directions){//node, <left/right, reachableHeight
         int maxHeight = 0;
         bool turnedLeft = true;
         if(index > treeSize ){
@@ -133,48 +141,163 @@ private:
             return maxHeight;
         }
         if(index <= node->leftSubtreeSize){
-            if(node->left == nullptr) {
-                BinaryNode * left = new BinaryNode(treeSize);
-                left->parent = node;
-                left->value = value;
-                ++ treeSize;
-                node->left = left;
-
-                testContainer.push_back(left);
-                maxHeight = 1;
-            }
-            else {
-                maxHeight = insert(node->left, index, value);
-            }
-        }
-        else {
-            if(node->right == nullptr) {
-                BinaryNode * right = new BinaryNode(treeSize);
-                right->parent = node;
-                right->value = value;
-                ++ treeSize;
-                node->right = right;
-
-                testContainer.push_back(right);
-                maxHeight = 1;
-            }
-            else
-                maxHeight = insert(node->right, index - node->leftSubtreeSize - 1, value);
-            turnedLeft = false;
-        }
-        if(turnedLeft){
             node->leftSubtreeSize ++;
             if(node->leftHeight < maxHeight){
                 node->leftHeight = maxHeight;
             }
-        }else{
+            if(node->left == nullptr) {
+                node->left = insertedNode;
+                insertedNode->parent = node;
+                maxHeight = max(insertedNode->leftHeight, insertedNode->rightHeight) + 1;
+            }
+            else {
+                maxHeight = insert(node->left, index, insertedNode, directions);
+            }
+        }
+        else {
             node->rightSubtreeSize ++;
             if(node->rightHeight < maxHeight){
                 node->rightHeight = maxHeight;
             }
+            if(node->right == nullptr) {
+                node->right = insertedNode;
+                insertedNode->parent = node;
+                maxHeight = max(insertedNode->leftHeight, insertedNode->rightHeight) + 1;
+            }
+            else
+                maxHeight = insert(node->right, index - node->leftSubtreeSize - 1, insertedNode, directions);
+            turnedLeft = false;
         }
+
+        directions.push_back(turnedLeft);
+
         //time to check for imbalances
+        int balance = node->leftHeight - node->rightHeight;
+        if(abs(balance) > 1){
+            int imbalanceType;
+            if(directions.size() >= 2){
+                int nodesIndex = directions.size() - 1;
+                if(directions[nodesIndex - 1]){
+                    //LL path
+                    imbalanceType = 0;
+                    if(directions.size() >= 3){
+                        if(!directions[nodesIndex - 2]) {
+                            imbalanceType = 1;
+                            //LR path
+                        }
+                    }
+                }else{
+                    imbalanceType = 2;
+                    //RR path
+                    if(directions.size() >= 3){
+                        if(directions[nodesIndex - 2]) {
+                            imbalanceType = 3;
+                            //RL path
+                        }
+                    }
+                }
+            }
+            if(abs(balance) > 2){
+                cout<<"WTF\n";
+            }
+            switch(imbalanceType){
+                    case 0:
+                        rightRotation(node);
+                        break;
+                    case 1:
+                        rightRotation(node->left);
+                        leftRotation(node);
+                        break;
+                    case 2:
+                        leftRotation(node);
+                        break;
+                    case 3:
+                        leftRotation(node->right);
+                        rightRotation(node);
+                        break;
+            }
+        }
+
         return maxHeight + 1;
+    }
+    void rightRotation(BinaryNode * node){
+        BinaryNode * parent = node->parent;
+        BinaryNode * leftChild = node->left;
+
+        if(parent != nullptr){
+            (parent->left == node ? parent->left = leftChild : parent->right = leftChild);
+        }
+        node->parent = leftChild;
+        node->left = nullptr;
+        node->leftHeight = 0;
+        node->leftSubtreeSize = 0;
+
+        if(leftChild->right != nullptr) {
+            vector<bool> dirs;
+            insert(node, 0, leftChild->right, dirs);
+        }
+        leftChild->right = node;
+        leftChild->parent = parent;
+
+
+        updateNode(node);
+        updateNode(leftChild);
+        if(parent != nullptr)
+            updateNode(parent);
+
+        if(node == root){
+            root = leftChild;
+        }
+        cout<<"";
+    }
+    void leftRotation(BinaryNode * node){
+        BinaryNode * parent = node->parent;
+        BinaryNode * rightChild = node->right;
+
+        if(parent != nullptr){
+            (parent->left == node ? parent->left = rightChild : parent->right = rightChild);
+        }
+        node->parent = rightChild;
+        node->right = nullptr;
+        node->rightHeight = 0;
+        node->rightSubtreeSize = 0;
+
+        if(rightChild->left != nullptr) {
+            vector<bool> dirs;
+            insert(node, node->leftHeight + 1, rightChild->left, dirs);
+        }
+        rightChild->left = node;
+        rightChild->parent = parent;
+
+        updateNode(node);
+        updateNode(rightChild);
+        if(parent != nullptr)
+            updateNode(parent);
+
+        if(node == root){
+            root = rightChild;
+        }
+    }
+    void updateNode(BinaryNode * n){
+        int lH = 0, lT = 0;
+        if(n->left != nullptr) {
+            lH++, lT++;
+            lH += max(n->left->leftHeight, n->left->rightHeight);
+            lT += max(n->left->leftSubtreeSize, n->left->rightSubtreeSize);
+        }
+        n->leftHeight = lH;
+        n->leftSubtreeSize = lT;
+
+        int rH = 0, rT = 0;
+        if(n->right != nullptr) {
+            rH++, rT++;
+            rH += max(n->right->leftHeight, n->right->rightHeight);
+            rT += max(n->right->leftSubtreeSize, n->right->rightSubtreeSize);
+        }
+        n->rightHeight = rH;
+        n->rightSubtreeSize = rT;
+
+
     }
 
     BinaryNode * getNodeAtIndex(BinaryNode * node, int index, stack<pair<BinaryNode *, bool>> &postOrderStack){
@@ -209,14 +332,12 @@ private:
 
 int main() {
     AVLTree avlTree;
-    avlTree.insert(0, 5);
-    avlTree.insert(0, 4);
-    avlTree.insert(0, 3);
-    avlTree.insert(0, 2);
     avlTree.insert(0, 1);
-   // avlTree.insert(3, 3);
-  //  avlTree.insert(4, 4);
-   // avlTree.insert(5, 5);
+    avlTree.insert(1, 1);
+    avlTree.insert(2, 1);
+    avlTree.insert(3, 1);
+    avlTree.insert(4, 1);
+    avlTree.insert(3, 5);
     cout<<"";
    for(int i = 0; i < avlTree.treeSize; i++){
        cout<<avlTree.getValue(i)<<" ";
