@@ -132,43 +132,37 @@ struct AVLTree{
         }
     }
 private:
-    int insert(BinaryNode * node, int index, BinaryNode * insertedNode, vector<bool> &directions){//node, <left/right, reachableHeight
-        int maxHeight = 0;
+    void insert(BinaryNode * node, int index, BinaryNode * insertedNode, vector<bool> &directions){//node, <left/right, reachableHeight
         bool turnedLeft = true;
         if(index > treeSize ){
             cout<<"INVALID ENTRY!";
-            maxHeight = -1;
-            return maxHeight;
+            return;
         }
         if(index <= node->leftSubtreeSize){
             node->leftSubtreeSize ++;
-            if(node->leftHeight < maxHeight){
-                node->leftHeight = maxHeight;
-            }
+
             if(node->left == nullptr) {
                 node->left = insertedNode;
                 insertedNode->parent = node;
-                maxHeight = max(insertedNode->leftHeight, insertedNode->rightHeight) + 1;
+                max(insertedNode->leftHeight, insertedNode->rightHeight) + 1;
             }
             else {
-                maxHeight = insert(node->left, index, insertedNode, directions);
+                insert(node->left, index, insertedNode, directions);
             }
         }
         else {
             node->rightSubtreeSize ++;
-            if(node->rightHeight < maxHeight){
-                node->rightHeight = maxHeight;
-            }
+
             if(node->right == nullptr) {
                 node->right = insertedNode;
                 insertedNode->parent = node;
-                maxHeight = max(insertedNode->leftHeight, insertedNode->rightHeight) + 1;
+                max(insertedNode->leftHeight, insertedNode->rightHeight) + 1;
             }
             else
-                maxHeight = insert(node->right, index - node->leftSubtreeSize - 1, insertedNode, directions);
+                insert(node->right, index - node->leftSubtreeSize - 1, insertedNode, directions);
             turnedLeft = false;
         }
-
+        updateNode(node);
         directions.push_back(turnedLeft);
 
         //time to check for imbalances
@@ -218,7 +212,6 @@ private:
             }
         }
 
-        return maxHeight + 1;
     }
     void rightRotation(BinaryNode * node){
         BinaryNode * parent = node->parent;
@@ -283,7 +276,7 @@ private:
         if(n->left != nullptr) {
             lH++, lT++;
             lH += max(n->left->leftHeight, n->left->rightHeight);
-            lT += max(n->left->leftSubtreeSize, n->left->rightSubtreeSize);
+            lT += n->left->leftSubtreeSize + n->left->rightSubtreeSize;
         }
         n->leftHeight = lH;
         n->leftSubtreeSize = lT;
@@ -292,7 +285,7 @@ private:
         if(n->right != nullptr) {
             rH++, rT++;
             rH += max(n->right->leftHeight, n->right->rightHeight);
-            rT += max(n->right->leftSubtreeSize, n->right->rightSubtreeSize);
+            rT += n->right->leftSubtreeSize + n->right->rightSubtreeSize;
         }
         n->rightHeight = rH;
         n->rightSubtreeSize = rT;
@@ -333,11 +326,11 @@ private:
 int main() {
     AVLTree avlTree;
     avlTree.insert(0, 1);
-    avlTree.insert(1, 1);
-    avlTree.insert(2, 1);
-    avlTree.insert(3, 1);
-    avlTree.insert(4, 1);
-    avlTree.insert(3, 5);
+    avlTree.insert(1, 2);
+    avlTree.insert(2, 3);
+    avlTree.insert(3, 4);
+    avlTree.insert(4, 5);
+    avlTree.insert(5, 6);
     cout<<"";
    for(int i = 0; i < avlTree.treeSize; i++){
        cout<<avlTree.getValue(i)<<" ";
